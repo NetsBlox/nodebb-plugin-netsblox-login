@@ -1,0 +1,22 @@
+{
+  "name": "nodebb-plugin-netsblox-login",
+  "version": "1.0.0",
+  "description": "NetsBlox login for NodeBB",
+  "main": "library.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/netsblox/nodebb-plugin-netsblox-login.git"
+  },
+  "author": "Brian Broll",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/netsblox/nodebb-plugin-netsblox-login/issues"
+  },
+  "homepage": "https://github.com/netsblox/nodebb-plugin-netsblox-login#readme",
+  "dependencies": {
+    "request": "^2.72.0"
+  }
+}
