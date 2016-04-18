@@ -1,7 +1,7 @@
 var passport = module.parent.require('passport'),
     winston = module.parent.require('winston'),
     passportLocal = module.parent.require('passport-local').Strategy,
-    hash = require('./sha512').hex_sha512,
+    hash = require('./libs/sha512').hex_sha512,
     url = 'http://editor.netsblox.org/api',
     request = require('request'),
     plugin = {};
