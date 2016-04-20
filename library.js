@@ -45,6 +45,7 @@ plugin.continueLogin = function(req, username, password, next) {
                         }
 
                         if (!exists) {
+                            winston.info(`[login] Creating ${username} ${body.admin ? '(admin)': ''}`);
                             user.create({
                                 username: username,
                                 isAdmin: body.admin,
@@ -69,7 +70,7 @@ plugin.continueLogin = function(req, username, password, next) {
 
                                 // If the login was successful:
                                 next(null, {
-                                    uid: username
+                                    uid: uid
                                 }, '[[success:authentication-successful]]');
                             })
                         }
