@@ -2,8 +2,10 @@ var passport = module.parent.require('passport'),
     winston = module.parent.require('winston'),
     passportLocal = module.parent.require('passport-local').Strategy,
     hash = require('./libs/sha512').hex_sha512,
-    url = 'http://editor.netsblox.org/api',
+    url = (process.env.NETSBLOX_URL || 'http://editor.netsblox.org') + '/api',
     request = require('request'),
+    COOKIE_ID = 'netsblox-cookie',
+    jar = request.jar(),
     plugin = {};
 
 plugin.login = function() {
@@ -13,8 +15,10 @@ plugin.login = function() {
 
 plugin.continueLogin = function(req, username, password, next) {
     // POST request to url
+    winston.info('[login] Trying to log in at ' + url);
     request.post({
         url: url,
+        jar: jar,
         form: {
             __u: username,
             __h: hash(password),
@@ -35,7 +39,15 @@ plugin.continueLogin = function(req, username, password, next) {
 
             if (res.statusCode === 200) {
                 var user = module.parent.require('./user');
+                var cookie = jar.getCookies(url).find(function(c) {
+                    return c.key === COOKIE_ID;
+                });
                 
+                // Attach the netsblox cookie to the user's response
+                if (cookie) {
+                    winston.info(`[login] forwarding "${COOKIE_ID}" cookie`);
+                    req.res.cookie(COOKIE_ID, cookie.value, cookie.toJSON());
+                }
                 user.getUidByEmail(body.email, (err, uid) => {
                     user.exists(uid, (err, exists) => {
                         winston.info(`[login] username "${username}" exists: ${exists}`);
