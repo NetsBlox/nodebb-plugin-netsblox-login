@@ -46,7 +46,11 @@ plugin.continueLogin = function(req, username, password, next) {
                 // Attach the netsblox cookie to the user's response
                 if (cookie) {
                     winston.info(`[login] forwarding "${COOKIE_ID}" cookie`);
-                    req.res.cookie(COOKIE_ID, cookie.value, cookie.toJSON());
+                    winston.info(`expires: ${cookie.expires}`);
+                    req.res.cookie(COOKIE_ID, cookie.value, {
+                        expires: cookie.expires,
+                        httpOnly: cookie.httpOnly
+                    });
                 }
                 user.getUidByEmail(body.email, (err, uid) => {
                     user.exists(uid, (err, exists) => {
