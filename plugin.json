@@ -2,6 +2,8 @@
     "id": "nodebb-plugin-netsblox-login",
     "library": "./library.js",
     "hooks": [
-        { "hook": "action:auth.overrideLogin", "method": "login" }
+        { "hook": "action:auth.overrideLogin", "method": "login" },
+        { "hook": "filter:register.check", "method": "checkAndRegister",
+            "callbacked": true}
     ]
 }
