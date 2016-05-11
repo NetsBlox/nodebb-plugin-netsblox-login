@@ -1,5 +1,6 @@
 var passport = module.parent.require('passport'),
     winston = module.parent.require('winston'),
+    user = module.parent.require('./user'),
     passportLocal = module.parent.require('passport-local').Strategy,
     hash = require('./libs/sha512').hex_sha512,
     url = (process.env.NETSBLOX_URL || 'http://editor.netsblox.org') + '/api',
@@ -38,7 +39,6 @@ plugin.continueLogin = function(req, username, password, next) {
             }
 
             if (res.statusCode === 200) {
-                var user = module.parent.require('./user');
                 var cookie = jar.getCookies(url).find(function(c) {
                     return c.key === COOKIE_ID;
                 });
@@ -98,7 +98,6 @@ plugin.continueLogin = function(req, username, password, next) {
                 next(new Error('[[error:invalid-username-or-password]]'));
             }
         });
-
     
     /*
         You'll probably want to add login in this method to determine whether a login
@@ -115,6 +114,91 @@ plugin.continueLogin = function(req, username, password, next) {
         
         Acceptable values are: username, email, password
     */
+};
+
+// Registration
+plugin.validate = function(data, callback) {
+    var username = data.userData.username,
+        email = data.userData.email,
+        password = data.userData.password,
+        signupUrl = url + '/SignUp/validate';
+
+    // Don't login on registration
+    data.res.locals.processLogin = false;
+
+    // Try to SignUp on NetsBlox
+    winston.info('[registration] Validating at ' + url);
+    request.post({
+        url: signupUrl,
+        form: {
+            Username: username,
+            Password: hash(password),
+            Email: email
+        }},
+        (err, res, body) => {
+            if (err) {
+                return callback(err);
+            }
+
+            if (res.statusCode === 200) {  // success!
+                return callback();
+            } else {
+                return callback(new Error(body));
+            }
+        });
+};
+
+plugin.checkAndRegister = function(data, callback) {
+    plugin.register(data.userData, function(err) {
+        if (err) {
+            return callback(err);
+        }
+        plugin.continueLogin(
+            data,
+            data.userData.username,
+            data.userData.password,
+            callback
+        );
+    });
+};
+
+plugin.registerOnComplete = function(data, callback) {
+    var uid = data.uid;
+
+    user.getUsersFields([uid], ['username', 'email'], function(err, users) {
+        if (err) {
+            return callback(err);
+        }
+        return plugin.register(users.pop(), callback);
+    });
+};
+
+plugin.register = function(userData, callback) {
+    var signupUrl = url + '/SignUp';
+        username = userData.username,
+        email = userData.email,
+        password = userData.password;
+
+    // Try to SignUp on NetsBlox
+    winston.info('[registration] Signing up at NetsBlox...');
+    request.post({
+        url: signupUrl,
+        form: {
+            Username: username,
+            Password: password ? hash(password) : '',
+            Email: email
+        }},
+        function(err, res, body) {
+            if (err) {
+                return callback(err);
+            }
+
+            if (res.statusCode === 200) {  // success!
+                return callback();
+            } else {
+                return callback(new Error(body));
+            }
+        });
 };
 
 module.exports = plugin;
