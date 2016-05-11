@@ -4,6 +4,8 @@
     "hooks": [
         { "hook": "action:auth.overrideLogin", "method": "login" },
         { "hook": "filter:register.check", "method": "checkAndRegister",
+            "callbacked": true},
+        { "hook": "static:user.loggedOut", "method": "logout",
             "callbacked": true}
     ]
 }
