@@ -6,7 +6,6 @@ var passport = module.parent.require('passport'),
     url = (process.env.NETSBLOX_URL || 'http://editor.netsblox.org') + '/api',
     request = require('request'),
     COOKIE_ID = 'netsblox-cookie',
-    jar = request.jar(),
     plugin = {};
 
 plugin.login = function() {
@@ -15,6 +14,7 @@ plugin.login = function() {
 };
 
 plugin.continueLogin = function(req, username, password, next) {
+    var jar = request.jar();
     // POST request to url
     winston.info('[login] Trying to log in at ' + url);
     request.post({
@@ -199,6 +199,35 @@ plugin.register = function(userData, callback) {
                 return callback(new Error(body));
             }
         });
+};
+
+// logout
+plugin.logout = function(data, callback) {
+    var jar = request.jar(),
+        cookie = data.req.cookies[COOKIE_ID];
+
+    winston.info('[logout] using cookie ' + cookie);
+    jar.setCookie(cookie, url, function(err, cookie) {
+        if (err) {
+            winston.warn('[logout] Could not set cookie: ' + err.toString());
+        }
+        winston.info('[logout] logging out from ' + url);
+        request.get({
+            url: url + '/logout',
+        }, function(err, res, body) {
+            if (err) {
+                return callback(err);
+            }
+            if (res.statusCode === 200) {
+                // delete the cookie for good measure
+                winston.info('[logout] clearing netsblox cookie');
+                data.res.clearCookie(COOKIE_ID);
+                return callback();
+            } else {
+                return callback(body);
+            }
+        });
+    });
 };
 
 module.exports = plugin;
