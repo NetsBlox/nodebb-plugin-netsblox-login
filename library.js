@@ -31,14 +31,14 @@ plugin.continueLogin = function(req, username, password, next) {
                 return next(new Error('[[error:' + err + ']]'));
             }
 
-            // Parse the user response
-            try {
-                body = JSON.parse(body);
-            } catch (err) {
-                return next(new Error('[[error:' + err + ']]'));
-            }
-
             if (res.statusCode === 200) {
+                // Parse the user response
+                try {
+                    body = JSON.parse(body);
+                } catch (err) {
+                    return next(new Error('[[error:' + err + ']]'));
+                }
+
                 var cookie = jar.getCookies(url).find(function(c) {
                     return c.key === COOKIE_ID;
                 });
@@ -93,9 +93,17 @@ plugin.continueLogin = function(req, username, password, next) {
                     });
                 });
 
-            } else if (res.statusCode === 404) {
+            } else if (399 < res.statusCode < 500) {
                 // But if the login was unsuccessful, pass an error back, like so:
-                next(new Error('[[error:invalid-username-or-password]]'));
+                let reason = 'Invalid Username or Password';
+                const resMsg = res.body.toLowerCase();
+
+                if (resMsg.includes('password')) {
+                    reason = 'invalid-password';
+                } else if (resMsg.includes('user')) {
+                    reason = 'invalid-username';
+                }
+                next(new Error(`[[error:${reason}]]`));
             }
         });
     
