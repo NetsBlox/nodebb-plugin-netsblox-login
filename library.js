@@ -48,7 +48,6 @@ plugin.continueLogin = function(req, username, password, next) {
                     winston.info(`[login] forwarding "${COOKIE_ID}" cookie`);
                     winston.info(`expires: ${cookie.expires}`);
                     req.res.cookie(COOKIE_ID, cookie.value, {
-                        expires: cookie.expires,
                         httpOnly: cookie.httpOnly
                     });
                 }
