@@ -211,9 +211,11 @@ plugin.logout = function(data, callback) {
             winston.warn('[logout] Could not set cookie: ' + err.toString());
         }
         winston.info('[logout] logging out from ' + url);
-        request.get({
+        request.post({
             url: url + '/logout',
         }, function(err, res, body) {
+            console.log('error:', err);
+            console.log('body', body);
             if (err) {
                 return callback(err);
             }
