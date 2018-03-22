@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-netsblox-login",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "NetsBlox login for NodeBB",
   "main": "library.js",
   "scripts": {
