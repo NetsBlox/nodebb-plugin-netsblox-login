@@ -27,6 +27,7 @@ plugin.continueLogin = function(req, username, password, next) {
         }},
         (err, res, body) => {
             if (err) {
+                // TODO: Handle this better...
                 winston.error(err);
                 return next(new Error('[[error:' + err + ']]'));
             }
@@ -136,6 +137,8 @@ plugin.validate = function(data, callback) {
         }},
         (err, res, body) => {
             if (err) {
+                // ERROR
+                console.log('ERROR', err);
                 return callback(err);
             }
 
@@ -225,6 +228,7 @@ plugin.logout = function(data, callback) {
                 data.res.clearCookie(COOKIE_ID);
                 return callback();
             } else {
+                console.log('returning body...');
                 return callback(body);
             }
         });
