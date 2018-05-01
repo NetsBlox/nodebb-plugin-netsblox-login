@@ -209,30 +209,23 @@ plugin.register = function(userData, callback) {
 
 // logout
 plugin.logout = function(data, callback) {
-    var jar = request.jar(),
-        cookie = data.req.cookies[COOKIE_ID];
-
-    winston.info('[logout] using cookie ' + cookie);
-    jar.setCookie(cookie, url, function(err, cookie) {
+    winston.info('[logout] logging out from ' + url);
+    request.post({
+        url: url + '/logout'
+    }, function(err, res, body) {
         if (err) {
-            winston.warn('[logout] Could not set cookie: ' + err.toString());
+            return callback(err);
         }
-        winston.info('[logout] logging out from ' + url);
-        request.get({
-            url: url + '/logout',
-        }, function(err, res, body) {
-            if (err) {
-                return callback(err);
-            }
-            if (res.statusCode === 200) {
-                // delete the cookie for good measure
-                winston.info('[logout] clearing netsblox cookie');
-                data.res.clearCookie(COOKIE_ID);
-                return callback();
-            } else {
-                return callback(body);
-            }
-        });
+        if (res.statusCode === 200) {
+            // update the cookie header from the login server
+            const rawValue = res.headers['set-cookie'];
+
+            winston.info(`[logout] clearing cookie for ${url}`);
+            data.req.res.set('Set-Cookie', rawValue);
+            return callback();
+        } else {
+            return callback(body);
+        }
     });
 };
 
